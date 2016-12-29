@@ -1,0 +1,18 @@
+---
+# tasks file for jenkins
+
+- name: Install jenkins
+  include: install.yml
+  tags:
+    - install
+
+- name: Vaidate authentication
+  include: config.yml
+
+- name: Install plugins
+  include: plugins.yml
+  tags:
+    - plugins
+
+- name: Jenkins Url
+  debug: msg={{ jenkins_uri }}

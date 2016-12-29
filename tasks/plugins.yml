@@ -1,0 +1,59 @@
+---
+# tasks file for jenkins plugins install
+
+- name: Set jenkins-cli auth params
+  set_fact:
+    jenkins_cli_auth: "--username {{ jenkins_admin.user }} --password {{ jenkins_admin.password }}"
+
+- name: Install plugins without a specific version
+  command: "{{ jenkins_cli_cmd }} install-plugin {{ jenkins_cli_auth }} {{ item.name }} -deploy"
+  register: jenkins_plugin_unversioned
+  when: '"version" not in item'
+  with_items: "{{ jenkins_plugins }}"
+
+# - name: Install plugins with a specific version
+#   command: 
+#   register: jenkins_plugin_versioned
+#   when: '"version" in item.value'
+#   with_dict: "{{ jenkins_plugins }}"
+
+- name: Initiate the fact
+  set_fact:
+    jenkins_restart_required: no
+
+# - name: Check if restart is required by any of the versioned plugins
+#   set_fact:
+#     jenkins_restart_required: yes
+#   when: item.changed
+#   with_items: "{{ jenkins_plugin_versioned.results }}"
+
+- name: Check if restart is required by any of the unversioned plugins
+  set_fact:
+    jenkins_restart_required: yes
+  when: item.changed
+  with_items: "{{ jenkins_plugin_unversioned.results }}"
+
+- name: Restart Jenkins if required
+  supervisorctl:
+    name: "{{ jenkins_instance }}"
+    state: restarted
+    config: "{{ supervisord_conf }}"
+  when: jenkins_restart_required
+
+- name: Wait for Jenkins to start up
+  uri:
+    url: "{{ jenkins_cli_uri }}"
+    status_code: 200
+    timeout: 5
+  register: jenkins_service_status
+  retries: 60
+  delay: 5
+  until: >
+     'status' in jenkins_service_status and
+     jenkins_service_status['status'] == 200
+  when: jenkins_restart_required
+
+- name: Reset the fact
+  set_fact:
+    jenkins_restart_required: no
+  when: jenkins_restart_required

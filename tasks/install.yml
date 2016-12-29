@@ -1,0 +1,41 @@
+---
+# tasks file for jenkins install
+
+- name: Download war file
+  get_url:
+    url: "{{ jenkins_war_uri }}"
+    dest: "{{ jenkins_war }}"
+    force: yes
+  tags:
+    - update
+
+- name: Template supervisor file
+  template:
+    src: jenkins.conf.j2
+    dest: "{{ supervisor_confd }}/{{ jenkins_instance }}.conf"
+    mode: 0644
+  
+- name: Jenkins under supervisor
+  supervisorctl:
+    name: "{{ jenkins_instance }}"
+    state: present
+    config: "{{ supervisord_conf }}"
+
+- name: Make sure jenkins is running
+  supervisorctl:
+    name: "{{ jenkins_instance }}"
+    state: started
+    config: "{{ supervisord_conf }}"
+
+- name: Wait for Jenkins to start up
+  uri:
+    url: "{{ jenkins_cli_uri }}"
+    status_code: 200
+    timeout: 5
+  register: jenkins_service_status
+  # Keep trying for 5 mins in 5 sec intervals
+  retries: 60
+  delay: 5
+  until: >
+     'status' in jenkins_service_status and
+     jenkins_service_status['status'] == 200

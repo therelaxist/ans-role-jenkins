@@ -1,0 +1,7 @@
+[program:jenkins{{ jenkins_port }}]
+environment=JENKINS_HOME={{ jenkins_home }}
+command={{ java }} -jar {{ jenkins_war }} --httpPort={{ jenkins_port }}
+autostart=true
+autorestart=true
+stderr_logfile={{ appuser[jenkins_user].log }}/jenkins{{ jenkins_port }}.err.log
+stdout_logfile={{ appuser[jenkins_user].log }}/jenkins{{ jenkins_port }}.out.log
