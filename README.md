@@ -1,4 +1,4 @@
-ans-role-jenkins
+ans-role-jenkins [![Build Status](https://travis-ci.org/therelaxist/ans-role-jenkins.svg?branch=master)](https://travis-ci.org/therelaxist/ans-role-jenkins)
 ================
 
 Ansible role for master-slave HA Jenkins.
