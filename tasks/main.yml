@@ -1,18 +1,31 @@
 ---
 # tasks file for jenkins
 
-- name: Install jenkins
-  include: install.yml
-  tags:
-    - install
+# - name: Install jenkins
+#   include: install.yml
+#   when: inventory_hostname in groups['jenkins-master']
+#   tags:
+#     - install
 
-- name: Vaidate authentication
-  include: config.yml
+# - name: Vaidate authentication
+#   include: config.yml
+#   when: inventory_hostname in groups['jenkins-master']
 
-- name: Install plugins
-  include: plugins.yml
-  tags:
-    - plugins
+# - name: Install plugins
+#   include: plugins.yml
+#   when: inventory_hostname in groups['jenkins-master']
+#   tags:
+#     - plugins
+
+# - name: Configure authentication
+#   include: auth.yml
+#   when: inventory_hostname in groups['jenkins-master']
+
+- name: Configure slaves
+  include: slaves.yml
+  with_items: "{{ groups['jenkins-slave'] }}"
+  when: inventory_hostname in groups['jenkins-master']
 
 - name: Jenkins Url
   debug: msg={{ jenkins_uri }}
+  when: inventory_hostname in groups['jenkins-master']

@@ -6,20 +6,21 @@ supervisord_conf: "{{ supervisor_home }}/supervisord.conf"
 
 # defaults for appuser
 appuser:
-  jenkins:
+  therelaxist:
     log: "{{ supervisor_home }}/log"
     downloads: /Users/therelaxist/Downloads
     home: /Users/therelaxist
 
+java: /usr/bin/java
+
 # defaults for jenkins
-jenkins_user: jenkins
+jenkins_user: therelaxist
 jenkins_port: 8080
 jenkins_instance: jenkins{{ jenkins_port }}
-java: /usr/bin/java
 jenkins_war_uri: "http://mirrors.jenkins.io/war-stable/latest/jenkins.war"
 jenkins_war: "{{ appuser[jenkins_user].downloads }}/jenkins.war"
 jenkins_home: "{{ appuser[jenkins_user].home }}/{{ jenkins_instance }}"
-jenkins_uri: "http://{{ ansible_default_ipv4.address }}:{{ jenkins_port }}"
+jenkins_uri: "http://{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}:{{ jenkins_port }}"
 jenkins_initial_passwd: "{{ jenkins_home }}/secrets/initialAdminPassword"
 jenkins_cli_uri: "{{ jenkins_uri }}/jnlpJars/jenkins-cli.jar"
 jenkins_cli: "{{ appuser[jenkins_user].downloads }}/jenkins-cli{{ jenkins_port }}.jar"
@@ -47,3 +48,9 @@ jenkins_plugins:
   - name: ldap
   - name: email-ext
   - name: mailer
+  - name: github-oauth
+  - name: greenballs
+
+# defaults for jenkins github
+github_web_uri: "https://github.com"
+github_api_uri: "https://api.github.com"

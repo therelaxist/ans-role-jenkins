@@ -1,0 +1,25 @@
+---
+# task file for jenkins auth config
+
+- name: Template github authorization groovy script
+  set_fact: 
+    github_authorization_script: "{{ lookup('template', 'github_authorization.groovy.j2') }}"
+
+- name: Get CSRF token from jenkins
+  uri:
+    url: "{{ jenkins_uri }}/crumbIssuer/api/json"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+  register: csrf_token
+
+- name: Run github authorization groovy script
+  uri:
+    url: "{{ jenkins_uri }}/scriptText"
+    method: POST
+    headers:
+      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
+    body: "script={{ github_authorization_script }}"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
