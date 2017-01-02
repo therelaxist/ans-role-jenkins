@@ -1,16 +1,6 @@
 ---
 # task file for jenkins auth config
 
-- name: Set plugin to install
-  set_fact:
-    plugins:
-      github-oauth: {}
-
-- name: Install github-oauth plugin
-  include: install_plugins.yml
-  static: no
-  when: inventory_hostname in groups['jenkins-master']
-
 - name: Template github authorization groovy script
   set_fact: 
     github_authorization_script: "{{ lookup('template', 'github_authorization.groovy') }}"

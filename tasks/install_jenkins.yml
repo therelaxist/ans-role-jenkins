@@ -21,7 +21,7 @@
     state: present
     config: "{{ supervisord_conf }}"
 
-- name: Make sure jenkins is running
+- name: Make sure jenkins has started
   supervisorctl:
     name: "{{ jenkins_instance }}"
     state: started

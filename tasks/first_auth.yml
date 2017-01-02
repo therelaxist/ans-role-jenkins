@@ -33,18 +33,3 @@
   set_fact:
     csrf_token: "{{ csrf_token_temp }}"
   when: csrf_token.status != 200
-
-- name: Template admin ssh setup groovy script
-  set_fact: 
-    admin_ssh_script: "{{ lookup('template', 'admin_ssh.groovy') }}"
-
-- name: Admin ssh setup
-  uri:
-    url: "{{ jenkins_uri }}/scriptText"
-    method: POST
-    headers:
-      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
-    body: "script={{ admin_ssh_script }}"
-    user: "{{ jenkins_admin.user }}"
-    password: "{{ jenkins_admin.password }}"
-    force_basic_auth: true

@@ -1,9 +1,5 @@
 ---
 # tasks file for jenkins slaves
-  
-- name: Rename var
-  set_fact:
-    jenkins_slave: "{{ item }}"
 
 - name: Template add-slaves groovy script
   set_fact: 

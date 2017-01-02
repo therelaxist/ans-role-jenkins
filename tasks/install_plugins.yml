@@ -25,11 +25,16 @@
     force_basic_auth: true
     timeout: 300
 
+- pause:
+    prompt: "Continue to restart jenkins(install_plugins_restart = true)"
+  when: install_plugins_restart | bool
+
 - name: Restart Jenkins
   supervisorctl:
     name: "{{ jenkins_instance }}"
     state: restarted
     config: "{{ supervisord_conf }}"
+  when: install_plugins_restart | bool
 
 - name: Wait for Jenkins to start up
   uri:

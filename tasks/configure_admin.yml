@@ -1,0 +1,17 @@
+---
+# task file for jenkins configure admin
+
+- name: Template admin ssh setup groovy script
+  set_fact: 
+    configure_admin_script: "{{ lookup('template', 'configure_admin.groovy') }}"
+
+- name: Admin ssh setup
+  uri:
+    url: "{{ jenkins_uri }}/scriptText"
+    method: POST
+    headers:
+      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
+    body: "script={{ configure_admin_script }}"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true

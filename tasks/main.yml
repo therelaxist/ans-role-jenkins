@@ -15,17 +15,27 @@
 # VALIDATE AUTH CONFIGURATION #
 ###############################
 
-- name: Vaidate authentication
+- name: Validate authentication
   include: first_auth.yml
   static: no
   when: inventory_hostname in groups['jenkins-master']
+
+############################
+# CONFIGURE ADMIN SETTINGS #
+############################
+
+- name: Configure admin settings
+  include: configure_admin.yml
+  static: no
+  when: inventory_hostname in groups['jenkins-master']  
 
 #################################
 # INSTALL LIST OF GIVEN PLUGINS #
 #################################
 
 - name: Install plugins
-  include: install_plugins.yml plugins="{{ jenkins_plugins }}"
+  include: install_plugins.yml
+  static: no
   when: inventory_hostname in groups['jenkins-master']
   tags:
     - plugins
@@ -35,7 +45,7 @@
 ##############################################################################
 
 - name: Configure slaves
-  include: add_slaves.yml
+  include: configure_slaves.yml jenkins_slave="{{ item }}"
   static: no
   with_items: "{{ groups['jenkins-slave'] }}"
   when: inventory_hostname in groups['jenkins-master']

@@ -1,4 +1,8 @@
 ---
+# defaults for jenkins github
+github_web_uri: "https://github.com"
+github_api_uri: "https://api.github.com"
+
 # defaults for supervisor
 supervisor_home: /Users/therelaxist/supervisor
 supervisor_confd: "{{ supervisor_home }}/conf.d/"
@@ -17,7 +21,6 @@ java: /usr/bin/java
 # defaults for jenkins
 jenkins_user: therelaxist
 jenkins_port: 8080
-jenkins_jnlp_port: 8081
 jenkins_instance: jenkins{{ jenkins_port }}
 jenkins_war_uri: "http://mirrors.jenkins.io/war-stable/latest/jenkins.war"
 jenkins_war: "{{ appuser[jenkins_user].downloads }}/jenkins.war"
@@ -28,32 +31,36 @@ jenkins_cli_uri: "{{ jenkins_uri }}/jnlpJars/jenkins-cli.jar"
 jenkins_cli: "{{ appuser[jenkins_user].downloads }}/jenkins-cli{{ jenkins_port }}.jar"
 jenkins_cli_cmd: "{{ java }} -jar {{ jenkins_cli }} -s {{ jenkins_uri }}"
 jenkins_admin:
+  name: Regulatory Jenkins
+  email: reg-jenkins@bloomberg.net
   user: "{{ (jenkins_admin_user and jenkins_admin_user != '') | ternary(jenkins_admin_user, 'admin') }}"
   password: "{{ (jenkins_admin_passwd and jenkins_admin_passwd != '') | ternary(jenkins_admin_passwd, 'password') }}"
   authorized_key: "{{ lookup('file', appuser[jenkins_user].public_key) }}"
 jenkins_plugins:
-  cloudbees-folder: {}
-  antisamy-markup-formatter: {}
-  build-timeout: {}
-  credentials-binding: {}
-  timestamper: {}
-  ws-cleanup: {}
-  ant: {}
-  gradle: {}
-  workflow-aggregator: {}
-  github-organization-folder: {}
-  pipeline-stage-view: {}
-  git: {}
-  subversion: {}
-  ssh-slaves: {}
-  matrix-auth: {}
-  pam-auth: {}
-  ldap: {}
-  email-ext: {}
-  mailer: {}
-  greenballs: {}
-plugins: {}
+  - cloudbees-folder
+  - antisamy-markup-formatter
+  - build-timeout
+  - credentials-binding
+  - timestamper
+  - ws-cleanup
+  - ant
+  - gradle
+  - workflow-aggregator
+  - github-organization-folder
+  - pipeline-stage-view
+  - git
+  - subversion
+  - matrix-auth
+  - pam-auth
+  - ldap
+  - email-ext
+  - mailer
+  - greenballs
+  - ssh-slaves
+  - github-oauth
+install_plugins_restart: false | bool
 
-# defaults for jenkins github
-github_web_uri: "https://github.com"
-github_api_uri: "https://api.github.com"
+# git config for jenkins
+git_config:
+  name: Tushar Tiwari
+  email: tushart91@gmail.com
