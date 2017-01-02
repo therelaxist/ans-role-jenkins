@@ -1,0 +1,29 @@
+---
+# tasks file for jenkins slaves
+  
+- name: Rename var
+  set_fact:
+    jenkins_slave: "{{ item }}"
+
+- name: Template add-slaves groovy script
+  set_fact: 
+    add_slaves_script: "{{ lookup('template', 'add_slaves.groovy') }}"
+
+- name: Get CSRF token from jenkins
+  uri:
+    url: "{{ jenkins_uri }}/crumbIssuer/api/json"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+  register: csrf_token
+
+- name: Configure jenkins slaves using groovy script
+  uri:
+    url: "{{ jenkins_uri }}/scriptText"
+    method: POST
+    headers:
+      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
+    body: "script={{ add_slaves_script }}"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true

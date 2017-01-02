@@ -10,12 +10,14 @@ appuser:
     log: "{{ supervisor_home }}/log"
     downloads: /Users/therelaxist/Downloads
     home: /Users/therelaxist
+    public_key: /Users/therelaxist/.ssh/id_rsa.pub
 
 java: /usr/bin/java
 
 # defaults for jenkins
 jenkins_user: therelaxist
 jenkins_port: 8080
+jenkins_jnlp_port: 8081
 jenkins_instance: jenkins{{ jenkins_port }}
 jenkins_war_uri: "http://mirrors.jenkins.io/war-stable/latest/jenkins.war"
 jenkins_war: "{{ appuser[jenkins_user].downloads }}/jenkins.war"
@@ -28,28 +30,29 @@ jenkins_cli_cmd: "{{ java }} -jar {{ jenkins_cli }} -s {{ jenkins_uri }}"
 jenkins_admin:
   user: "{{ (jenkins_admin_user and jenkins_admin_user != '') | ternary(jenkins_admin_user, 'admin') }}"
   password: "{{ (jenkins_admin_passwd and jenkins_admin_passwd != '') | ternary(jenkins_admin_passwd, 'password') }}"
+  authorized_key: "{{ lookup('file', appuser[jenkins_user].public_key) }}"
 jenkins_plugins:
-  - name: cloudbees-folder
-  - name: antisamy-markup-formatter
-  - name: build-timeout
-  - name: credentials-binding
-  - name: timestamper
-  - name: ws-cleanup
-  - name: ant
-  - name: gradle
-  - name: workflow-aggregator
-  - name: github-organization-folder
-  - name: pipeline-stage-view
-  - name: git
-  - name: subversion
-  - name: ssh-slaves
-  - name: matrix-auth
-  - name: pam-auth
-  - name: ldap
-  - name: email-ext
-  - name: mailer
-  - name: github-oauth
-  - name: greenballs
+  cloudbees-folder: {}
+  antisamy-markup-formatter: {}
+  build-timeout: {}
+  credentials-binding: {}
+  timestamper: {}
+  ws-cleanup: {}
+  ant: {}
+  gradle: {}
+  workflow-aggregator: {}
+  github-organization-folder: {}
+  pipeline-stage-view: {}
+  git: {}
+  subversion: {}
+  ssh-slaves: {}
+  matrix-auth: {}
+  pam-auth: {}
+  ldap: {}
+  email-ext: {}
+  mailer: {}
+  greenballs: {}
+plugins: {}
 
 # defaults for jenkins github
 github_web_uri: "https://github.com"

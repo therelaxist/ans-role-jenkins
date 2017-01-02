@@ -1,0 +1,44 @@
+---
+# task file for jenkins plugins install
+
+- name: Get CSRF token from jenkins
+  uri:
+    url: "{{ jenkins_uri }}/crumbIssuer/api/json"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+  register: csrf_token
+
+- name: Template install plugins groovy script
+  set_fact: 
+    install_plugins_script: "{{ lookup('template', 'install_plugins.groovy') }}"
+
+- name: Install Plugins (timeout=300s)
+  uri:
+    url: "{{ jenkins_uri }}/scriptText"
+    method: POST
+    headers:
+      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
+    body: "script={{ install_plugins_script }}"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+    timeout: 300
+
+- name: Restart Jenkins
+  supervisorctl:
+    name: "{{ jenkins_instance }}"
+    state: restarted
+    config: "{{ supervisord_conf }}"
+
+- name: Wait for Jenkins to start up
+  uri:
+    url: "{{ jenkins_cli_uri }}"
+    status_code: 200
+    timeout: 5
+  register: jenkins_service_status
+  retries: 60
+  delay: 5
+  until: >
+     'status' in jenkins_service_status and
+     jenkins_service_status['status'] == 200

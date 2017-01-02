@@ -1,0 +1,50 @@
+---
+# tasks file for jenkins configure
+
+- name: Validate entered credentials with jenkins
+  uri:
+    url: "{{ jenkins_uri }}/crumbIssuer/api/json"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+  ignore_errors: true
+  register: csrf_token
+
+- name: Get first-time password if login failed
+  command: "head -1 {{ jenkins_initial_passwd }}"
+  register: initial_passwd
+  when: csrf_token.status != 200
+
+- name: Extract temporary password
+  set_fact:
+    jenkins_admin: "{{ jenkins_admin | combine({'password': initial_passwd.stdout}) }}"
+  when: csrf_token.status != 200
+
+- name: Get CSRF token from jenkins using temporary password
+  uri:
+    url: "{{ jenkins_uri }}/crumbIssuer/api/json"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true
+  register: csrf_token_temp
+  when: csrf_token.status != 200
+
+- name: Replace password with temp password
+  set_fact:
+    csrf_token: "{{ csrf_token_temp }}"
+  when: csrf_token.status != 200
+
+- name: Template admin ssh setup groovy script
+  set_fact: 
+    admin_ssh_script: "{{ lookup('template', 'admin_ssh.groovy') }}"
+
+- name: Admin ssh setup
+  uri:
+    url: "{{ jenkins_uri }}/scriptText"
+    method: POST
+    headers:
+      Jenkins-Crumb: "{{ csrf_token.json.crumb }}"
+    body: "script={{ admin_ssh_script }}"
+    user: "{{ jenkins_admin.user }}"
+    password: "{{ jenkins_admin.password }}"
+    force_basic_auth: true

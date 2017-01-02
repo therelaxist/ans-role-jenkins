@@ -1,30 +1,57 @@
 ---
 # tasks file for jenkins
 
-# - name: Install jenkins
-#   include: install.yml
-#   when: inventory_hostname in groups['jenkins-master']
-#   tags:
-#     - install
+##########################
+# INSTALL/UPDATE JENKINS #
+##########################
 
-# - name: Vaidate authentication
-#   include: config.yml
-#   when: inventory_hostname in groups['jenkins-master']
+- name: Install jenkins
+  include: install_jenkins.yml
+  when: inventory_hostname in groups['jenkins-master']
+  tags:
+    - install
 
-# - name: Install plugins
-#   include: plugins.yml
-#   when: inventory_hostname in groups['jenkins-master']
-#   tags:
-#     - plugins
+###############################
+# VALIDATE AUTH CONFIGURATION #
+###############################
 
-# - name: Configure authentication
-#   include: auth.yml
-#   when: inventory_hostname in groups['jenkins-master']
+- name: Vaidate authentication
+  include: first_auth.yml
+  static: no
+  when: inventory_hostname in groups['jenkins-master']
+
+#################################
+# INSTALL LIST OF GIVEN PLUGINS #
+#################################
+
+- name: Install plugins
+  include: install_plugins.yml plugins="{{ jenkins_plugins }}"
+  when: inventory_hostname in groups['jenkins-master']
+  tags:
+    - plugins
+
+##############################################################################
+# CONFIGURE SLAVES TO BE ADDED TO THE JENKINS MASTER (SSH-SLAVES PLUGIN REQ) #
+##############################################################################
 
 - name: Configure slaves
-  include: slaves.yml
+  include: add_slaves.yml
+  static: no
   with_items: "{{ groups['jenkins-slave'] }}"
   when: inventory_hostname in groups['jenkins-master']
+  tags:
+    - slaves
+
+######################################################################
+# CONFIGURE GITHUB AUTHENTICATION (REQUIRES CONFIGURATION ON GITHUB) #
+######################################################################
+
+- name: Configure authentication
+  include: github_auth.yml
+  static: no
+  when: inventory_hostname in groups['jenkins-master']
+  tags:
+    - auth
 
 - name: Jenkins Url
   debug: msg={{ jenkins_uri }}
